@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Solar System Model</title>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+        #background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('assets/8k_stars_milky_way.jpg') no-repeat center center;
+            background-size: cover;
+            z-index: -1;
+        }
+    
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 25vh;
+            height: 100%;
+            background-color: rgba(21, 21, 21, 0.259);
+            color: rgb(230, 141, 141);
+            padding: 20px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content:space-around;
+        }
+        select{
+            outline: none;
+        }
+
+        #overlay select, #overlay textarea {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid #ccc;
+            color: rgb(161, 161, 161);
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        #overlay textarea {
+            border-radius: 20px;
+            outline: none;
+            resize: none;
+            height: 60px;
+            width: 90%;
+        }
+        #h{
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            color: beige;
+            font-size: 25px;
+        }
+        p{
+            font-family:monospace;
+            color: blueviolet;
+        }
+        select{
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="background"></div>
+
+    <div id="overlay">
+        <div>
+        <h4 id="h">Distance From Sun</h4>
+        
+        <select id="planetDropdown">
+            <option value="mercury">Mercury</option>
+            <option value="venus">Venus</option>
+            <option value="earth">Earth</option>
+            <option value="mars">Mars</option>
+            <option value="jupiter">Jupiter</option>
+            <option value="saturn">Saturn</option>
+            <option value="uranus">Uranus</option>
+            <option value="neptune">Neptune</option>
+        </select>
+        <textarea id="planetInfo" readonly>Distance will appear here</textarea>
+        </div>
+        <div>
+            <p>Made By Nanakjot</p>
+            <p>With the help of AI</p>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.45;
+        controls.enableZoom = true;
+        controls.minDistance = 10; // Minimum zoom distance
+        controls.maxDistance = 120; // Maximum zoom distance
+
+        const sunLight = new THREE.PointLight(0xffffff, 1, 1000); 
+        sunLight.position.set(0, 0, 0);
+        scene.add(sunLight);
+
+        const ambientLight = new THREE.AmbientLight(0x404040); 
+        scene.add(ambientLight);
+
+        const textureLoader = new THREE.TextureLoader();
+        const textures = {
+            mercury: textureLoader.load('assets/2k_mercury.jpg'),
+            venus: textureLoader.load('assets/2k_venus_surface.jpg'),
+            earth: textureLoader.load('assets/2k_earth_daymap.jpg'),
+            mars: textureLoader.load('assets/2k_mars.jpg'),
+            jupiter: textureLoader.load('assets/2k_jupiter.jpg'),
+            saturn: textureLoader.load('assets/2k_saturn.jpg'),
+            uranus: textureLoader.load('assets/2k_uranus.jpg'),
+            neptune: textureLoader.load('assets/2k_neptune.jpg'),
+            sun: textureLoader.load('assets/8k_sun.jpg')
+        };
+
+        function createPlanet(size, texture, orbitRadius, orbitEccentricity) {
+            const geometry = new THREE.SphereGeometry(size, 64, 64);
+            const material = new THREE.MeshLambertMaterial({
+                map: texture
+            });
+            const planet = new THREE.Mesh(geometry, material);
+
+            const angle = Math.random() * 2 * Math.PI;
+            planet.position.x = orbitRadius * Math.cos(angle);
+            planet.position.z = orbitRadius * Math.sin(angle) * orbitEccentricity;
+
+            scene.add(planet);
+            return planet;
+        }
+
+        function createSun(size, texture) {
+            const geometry = new THREE.SphereGeometry(size, 64, 64);
+            const material = new THREE.MeshBasicMaterial({ map: texture });
+            const sun = new THREE.Mesh(geometry, material);
+
+            scene.add(sun);
+            return sun;
+        }
+
+        const sun = createSun(5, textures.sun);
+        createOrbit(7, 1.205); const mercury = createPlanet(0.4, textures.mercury, 7, 1.205);
+        createOrbit(10, 1.006); const venus = createPlanet(0.9, textures.venus, 10, 1.006);
+        createOrbit(13, 1.016); const earth = createPlanet(1, textures.earth, 13, 1.016);
+        createOrbit(16, 1.093); const mars = createPlanet(0.6, textures.mars, 16, 1.093);
+        createOrbit(30, 1.048); const jupiter = createPlanet(2, textures.jupiter, 30, 1.048);
+        createOrbit(45, 1.056); const saturn = createPlanet(1.7, textures.saturn, 45, 1.056);
+        createOrbit(61, 1.046); const uranus = createPlanet(1.3, textures.uranus, 61, 1.046);
+        createOrbit(77, 1.009); const neptune = createPlanet(1.2, textures.neptune, 77, 1.009);
+
+        const rotationSpeeds = {
+            mercury: ((2 * Math.PI) / (58.6 / 24)) / 1000,
+            venus: ((2 * Math.PI) / ((243 * 24) / 24)) / 1000,
+            earth: ((2 * Math.PI) / ((24 * 1) / 24)) / 2000,
+            mars: ((2 * Math.PI) / ((24.6) / 24)) / 2000,
+            jupiter: ((2 * Math.PI) / ((9.9) / 24)) / 10000,
+            saturn: ((2 * Math.PI) / ((10.7) / 24)) / 10000,
+            uranus: ((2 * Math.PI) / ((17.2) / 24)) / 10000,
+            neptune: ((2 * Math.PI) / ((16.1) / 24)) / 10000
+        };
+
+        camera.position.set(0, 20, 50);
+
+        scene.rotation.y = -Math.PI / 3;
+
+        controls.update();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            mercury.rotation.y += rotationSpeeds.mercury;
+            venus.rotation.y += rotationSpeeds.venus;
+            earth.rotation.y += rotationSpeeds.earth;
+            mars.rotation.y += rotationSpeeds.mars;
+            jupiter.rotation.y += rotationSpeeds.jupiter;
+            saturn.rotation.y += rotationSpeeds.saturn;
+            uranus.rotation.y += rotationSpeeds.uranus;
+            neptune.rotation.y += rotationSpeeds.neptune;
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        function createOrbit(radius, eccentricity) {
+            const curve = new THREE.EllipseCurve(
+                0, 0,            
+                radius, radius * eccentricity, 
+                0, 2 * Math.PI,
+                false,        
+                0               
+            );
+
+            const points = curve.getPoints(200);
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+
+            const material = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.3 });
+
+            const ellipse = new THREE.Line(geometry, material);
+            ellipse.rotation.x = Math.PI / 2; 
+            scene.add(ellipse);
+        }
+
+        async function fetchPlanetDistance(planet) {
+            const apiKey = 'MHFF1CKeUaU0mv5cfhSwyGZSdGLLdAubuYEydlrs'; // Replace with your API key
+            const response = await fetch(`https://api.le-systeme-solaire.net/rest/bodies/${planet}?api_key=${apiKey}`);
+            const data = await response.json();
+            return data?.semimajorAxis || 'Unknown';
+        }
+
+        const planetDropdown = document.getElementById("planetDropdown");
+        const planetInfo = document.getElementById("planetInfo");
+
+        planetDropdown.addEventListener("change", async function() {
+            const selectedPlanet = planetDropdown.value;
+            const distance = await fetchPlanetDistance(selectedPlanet); 
+            planetInfo.value = `${selectedPlanet.charAt(0).toUpperCase() + selectedPlanet.slice(1)} is currently ${distance} km away from the Sun.`;
+        });
+    </script>
+</body>
+</html>

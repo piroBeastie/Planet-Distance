@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Solar System Model</title>
+    <title>PlanetDist By Beastie</title>
     <style>
         body { margin: 0; }
         canvas { display: block; }
@@ -85,7 +85,7 @@
         <textarea id="planetInfo" readonly>Distance will appear here</textarea>
         </div>
         <div>
-            <p>Made By Nanakjot</p>
+            <p>Made By Nanakjot/Beastie</p>
             <p>With the help of AI</p>
         </div>
     </div>
@@ -218,7 +218,7 @@
         }
 
         async function fetchPlanetDistance(planet) {
-            const apiKey = 'MHFF1CKeUaU0mv5cfhSwyGZSdGLLdAubuYEydlrs'; // Replace with your API key
+            const apiKey = 'MHFF1CKeUaU0mv5cfhSwyGZSdGLLdAubuYEydlrs';
             const response = await fetch(`https://api.le-systeme-solaire.net/rest/bodies/${planet}?api_key=${apiKey}`);
             const data = await response.json();
             return data?.semimajorAxis || 'Unknown';
